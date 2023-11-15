@@ -44,7 +44,7 @@ async def report_loop(bot: Bot) -> None:
             except Exception as e:
                 print(e)
 
-        await asyncio.sleep(60*60)
+        await asyncio.sleep(20)
 
 async def start_handler(message: types.Message) -> None:
     """Приветствие нового пользователя и добавление его в базу."""

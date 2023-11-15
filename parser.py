@@ -43,6 +43,8 @@ class Parser:
         self.driver.get('https://xms.miatel.ru/history')
         wait = WebDriverWait(self.driver, 15).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody :first-child td')))
+        wait = WebDriverWait(self.driver, 15).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody > tr:nth-child(1) > td:nth-child(8)'), 'chesnok'))
         date_elem = self.driver.find_element(By.CSS_SELECTOR, 'tbody :first-child td').text
         sms_date = datetime.strptime(date_elem, '%d.%m.%Y %H:%M').date()
         now = datetime.now().date()
@@ -53,8 +55,8 @@ class Parser:
         def inner():
             nonlocal today
             current_date = datetime.today().date()
-            if current_date != today:  # Если текущая дата не совпадает с сохраненной датой
-                today = current_date  # Обновляем сохраненную дату
+            if current_date != today:
+                today = current_date
                 return False
             return True
         return inner
