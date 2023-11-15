@@ -18,7 +18,8 @@ class Parser:
         self.driver.get('https://xms.miatel.ru/login?redirect=%2F')
         username_field = self.driver.find_element(By.CSS_SELECTOR, '[type="text"]')
         password_field = self.driver.find_element(By.CSS_SELECTOR, '[type="password"]')
-        while username_field.get_attribute('value') != 'npronyushkin@tennisi.it':
+        while len(username_field.get_attribute('value')) != 23:
+            username_field.clear()
             username_field.send_keys(self.user)
         while len(password_field.get_attribute('value')) != 20:
             password_field.clear()
