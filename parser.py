@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import date, datetime, timedelta
 import asyncio
+import time
 
 class Parser:
     def __init__(self, user, password):
@@ -43,9 +44,12 @@ class Parser:
         self.driver.get('https://xms.miatel.ru/history')
         wait = WebDriverWait(self.driver, 15).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody :first-child td')))
-        wait = WebDriverWait(self.driver, 15).until(
-            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody > tr:nth-child(1) > td:nth-child(8)'), 'chesnok'))
+        wait = WebDriverWait(self.driver, 15).until_not(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody :first-child td'), 'Запись загружается...'))
+        time.sleep(2)
         date_elem = self.driver.find_element(By.CSS_SELECTOR, 'tbody :first-child td').text
+        if date_elem == "Отсутствуют данные":
+            return False
         sms_date = datetime.strptime(date_elem, '%d.%m.%Y %H:%M').date()
         now = datetime.now().date()
         return sms_date == now

@@ -26,14 +26,14 @@ async def report_loop(bot: Bot) -> None:
                 parser = Parser(user=login, password=password)
                 await parser.login()
                 value = await parser.get_balance()
-                today_sms = await parser.checkSms()
                 if time_now > datetime.strptime("17:00:00", "%H:%M:%S").time():
+                    today_sms = await parser.checkSms()
                     check_date_func = await parser.check_date()
                     message = check_date_func()
-                if time_now > datetime.strptime("17:00:00", "%H:%M:%S").time() and not today_sms and not message:
-                    for client in DB["clients"]:
-                        await bot.send_message(client, f"За сегодняшний день сообщений не было")
-                    message = True
+                    if not today_sms and not message:
+                        for client in DB["clients"]:
+                            await bot.send_message(client, f"За сегодняшний день сообщений не было")
+                        message = True
                 if isinstance(value, str):
                     for client in DB["clients"]:
                         await bot.send_message(client, value, parse_mode=types.ParseMode.MARKDOWN)
