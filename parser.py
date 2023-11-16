@@ -17,6 +17,9 @@ class Parser:
 
     async def login(self):
         self.driver.get('https://xms.miatel.ru/login?redirect=%2F')
+        wait = WebDriverWait(self.driver, 15).until(
+            EC.visibility_of_element_located((By.CLASS_NAME, 'v-form'))
+        )
         username_field = self.driver.find_element(By.CSS_SELECTOR, '[type="text"]')
         password_field = self.driver.find_element(By.CSS_SELECTOR, '[type="password"]')
         while len(username_field.get_attribute('value')) != 23:
@@ -27,12 +30,15 @@ class Parser:
             password_field.send_keys(self.password)
         submit_button = self.driver.find_element(By.CSS_SELECTOR, '[type="submit"]')
         submit_button.click()
-        wait = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, '[href="/balance"]')))
+        wait = WebDriverWait(self.driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, '[href="/balance"]'))
+        )
 
     async def get_balance(self):
         self.driver.get('https://xms.miatel.ru/balance')
         wait = WebDriverWait(self.driver, 15).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'td.text-right > div > span')))
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'td.text-right > div > span'))
+        )
         balance_elem = self.driver.find_element(By.CSS_SELECTOR, 'td.text-right > div > span').text
         rub, coins = balance_elem[:-2].split(',')
         coins = f"0.{coins}"
@@ -43,10 +49,12 @@ class Parser:
     async def checkSms(self):
         self.driver.get('https://xms.miatel.ru/history')
         wait = WebDriverWait(self.driver, 15).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody :first-child td')))
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody :first-child td'))
+        )
         wait = WebDriverWait(self.driver, 15).until_not(
-            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody :first-child td'), 'Запись загружается...'))
-        time.sleep(2)
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody :first-child td'), 'Запись загружается...')
+        )
+        await self.driver.implicitly_wait(2)
         date_elem = self.driver.find_element(By.CSS_SELECTOR, 'tbody :first-child td').text
         if date_elem == "Отсутствуют данные":
             return False
