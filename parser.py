@@ -1,11 +1,11 @@
+import asyncio
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import date, datetime, timedelta
-import asyncio
-import time
+
 
 class Parser:
     def __init__(self, user, password):
@@ -26,8 +26,8 @@ class Parser:
             username_field.clear()
             username_field.send_keys(self.user)
         while len(password_field.get_attribute('value')) != 20:
-            password_field.clear()
-            password_field.send_keys(self.password)
+             password_field.clear()
+             password_field.send_keys(self.password)
         submit_button = self.driver.find_element(By.CSS_SELECTOR, '[type="submit"]')
         submit_button.click()
         wait = WebDriverWait(self.driver, 15).until(
@@ -46,7 +46,7 @@ class Parser:
         balance = int(rub) + float(coins)
         return balance
 
-    async def checkSms(self):
+    async def check_sms(self):
         self.driver.get('https://xms.miatel.ru/history')
         wait = WebDriverWait(self.driver, 15).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'tbody :first-child td'))
@@ -54,7 +54,7 @@ class Parser:
         wait = WebDriverWait(self.driver, 15).until_not(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody :first-child td'), 'Запись загружается...')
         )
-        await self.driver.implicitly_wait(2)
+        self.driver.implicitly_wait(2)
         date_elem = self.driver.find_element(By.CSS_SELECTOR, 'tbody :first-child td').text
         if date_elem == "Отсутствуют данные":
             return False
@@ -64,6 +64,7 @@ class Parser:
 
     async def check_date(self):
         today = date.today() - timedelta(days=1)
+
         def inner():
             nonlocal today
             current_date = datetime.today().date()
@@ -71,8 +72,8 @@ class Parser:
                 today = current_date
                 return False
             return True
+
         return inner
 
     async def quit(self):
         self.driver.quit()
-

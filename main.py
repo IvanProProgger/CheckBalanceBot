@@ -1,50 +1,47 @@
 import asyncio
 import shelve
-
 from aiogram import Bot, Dispatcher, types
-from aiogram.dispatcher import handler
-
+from aiogram.dispatcher import filters
 from config import USER, BOT_TOKEN
 from parser import Parser
-
-from datetime import datetime, date, time
+from datetime import datetime, time
 
 DB = shelve.open("database", writeback=True)
 
 if DB.get("clients") is None:
     DB["clients"] = set()
 
-
 async def report_loop(bot: Bot) -> None:
-    """Запускается каждые 10 минут и проверяет корректна(более 5т.р.) ли сумма денежных средств на счету chesnok,
-    наличие СМС-оповещений за сегодняшний день"""
+    """Запускается каждые 10 минут и проверяет, корректна ли сумма денежных средств
+     на счету chesnok (более 5 тыс.руб.),
+     наличие СМС-оповещений за сегодняшний день"""
     while True:
         for login, password in USER.items():
             datetime_now = datetime.now()
             time_now = datetime_now.time()
-            message = True
             try:
                 parser = Parser(user=login, password=password)
                 await parser.login()
                 value = await parser.get_balance()
-                if time_now > datetime.strptime("17:00:00", "%H:%M:%S").time():
-                    today_sms = await parser.checkSms()
+                if time_now > time(hour=17, minute=0, second=0):
+                    today_sms = await parser.check_sms()
                     check_date_func = await parser.check_date()
                     message = check_date_func()
                     if not today_sms and not message:
                         for client in DB["clients"]:
-                            await bot.send_message(client, f"За сегодняшний день сообщений не было")
+                            await bot.send_message(client, "За сегодняшний день сообщений не было")
                 if isinstance(value, str):
                     for client in DB["clients"]:
                         await bot.send_message(client, value, parse_mode=types.ParseMode.MARKDOWN)
                 else:
                     if value < 5000:
                         for client in DB["clients"]:
-                            await bot.send_message(client, f"Необходимо пополнить счёт ChesnokBet RUB.\nСумма денежных средств на счету ChesnokBet RUB: {value}.\nНеобходимо внести от {5000-value}Р")
+                            await bot.send_message(client, f"Необходимо пополнить счёт ChesnokBet RUB."
+                                                           f"Сумма денежных средств на счету ChesnokBet RUB: {value}."
+                                                           f"Необходимо внести {5000-value}Р")
             except Exception as e:
                 print(e)
-
-        await asyncio.sleep(20)
+        await asyncio.sleep(60 * 60)
 
 
 async def start_handler(message: types.Message) -> None:
