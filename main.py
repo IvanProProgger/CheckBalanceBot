@@ -16,7 +16,8 @@ if DB.get("clients") is None:
 
 
 async def report_loop(bot: Bot) -> None:
-    """Запускается каждые 10 минут и проверяет корректна(более 5т.р.) ли сумма денежных средств на счету chesnok"""
+    """Запускается каждые 10 минут и проверяет корректна(более 5т.р.) ли сумма денежных средств на счету chesnok,
+    наличие СМС-оповещений за сегодняшний день"""
     while True:
         for login, password in USER.items():
             datetime_now = datetime.now()
@@ -33,7 +34,6 @@ async def report_loop(bot: Bot) -> None:
                     if not today_sms and not message:
                         for client in DB["clients"]:
                             await bot.send_message(client, f"За сегодняшний день сообщений не было")
-                        message = True
                 if isinstance(value, str):
                     for client in DB["clients"]:
                         await bot.send_message(client, value, parse_mode=types.ParseMode.MARKDOWN)
@@ -45,6 +45,7 @@ async def report_loop(bot: Bot) -> None:
                 print(e)
 
         await asyncio.sleep(20)
+
 
 async def start_handler(message: types.Message) -> None:
     """Приветствие нового пользователя и добавление его в базу."""
