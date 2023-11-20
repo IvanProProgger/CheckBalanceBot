@@ -40,7 +40,7 @@ async def report_loop(bot: Bot) -> None:
                         for client in DB["clients"]:
                             await bot.send_message(client, f"Необходимо пополнить счёт ChesnokBet RUB."
                                                            f"Сумма денежных средств на счету ChesnokBet RUB: {value}."
-                                                           f"Необходимо внести {5000-value}Р")
+                                                           f"Необходимо внести от {5000-value}Р")
             except Exception as e:
                 print(e)
         await asyncio.sleep(60 * 60)
