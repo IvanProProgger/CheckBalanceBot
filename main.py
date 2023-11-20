@@ -11,7 +11,10 @@ DB = shelve.open("database", writeback=True)
 if DB.get("clients") is None:
     DB["clients"] = set()
 
+message = datetime.today().date()
+
 async def report_loop(bot: Bot) -> None:
+
     """Запускается каждые 10 минут и проверяет, корректна ли сумма денежных средств
      на счету chesnok (более 5 тыс.руб.),
      наличие СМС-оповещений за сегодняшний день"""
@@ -23,10 +26,9 @@ async def report_loop(bot: Bot) -> None:
                 parser = Parser(user=login, password=password)
                 await parser.login()
                 value = await parser.get_balance()
-                if time_now > time(hour=17, minute=0, second=0):
+                if time_now < time(hour=17, minute=0, second=0):
                     today_sms = await parser.check_sms()
-                    check_date_func = await parser.check_date()
-                    message = check_date_func()
+                    message = parser.is_message(datetime_now.date())
                     if not today_sms and not message:
                         for client in DB["clients"]:
                             await bot.send_message(client, "За сегодняшний день сообщений не было")

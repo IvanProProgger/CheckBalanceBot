@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import date, datetime, timedelta
 
+message = datetime.today().date() - timedelta(days=1)
 
 class Parser:
     def __init__(self, user, password):
@@ -62,18 +63,13 @@ class Parser:
         now = datetime.now().date()
         return sms_date == now
 
-    async def check_date(self):
-        today = date.today() - timedelta(days=1)
-
-        def inner():
-            nonlocal today
-            current_date = datetime.today().date()
-            if current_date != today:
-                today = current_date
-                return False
-            return True
-
-        return inner
+    @staticmethod
+    def is_message(date):
+        global message
+        if date != message:
+            message = date
+            return False
+        return True
 
     async def quit(self):
         self.driver.quit()
