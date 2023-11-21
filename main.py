@@ -11,7 +11,7 @@ DB = shelve.open("database", writeback=True)
 if DB.get("clients") is None:
     DB["clients"] = set()
 
-message = datetime.today().date()
+attempts = 3
 
 async def report_loop(bot: Bot) -> None:
 
@@ -20,29 +20,41 @@ async def report_loop(bot: Bot) -> None:
      наличие СМС-оповещений за сегодняшний день"""
     while True:
         for login, password in USER.items():
-            datetime_now = datetime.now()
-            time_now = datetime_now.time()
-            try:
-                parser = Parser(user=login, password=password)
-                await parser.login()
-                value = await parser.get_balance()
+            attempt = 0
+            while attempt < attempts:
+                try:
+                    parser = Parser(user=login, password=password)
+                    await parser.login()
+                    value = await parser.get_balance()
+                    if isinstance(value, str):
+                        raise value
+                    else:
+                        if value > 5000:
+                            break
+                        for client in DB["clients"]:
+                            await bot.send_message(client, f"Необходимо пополнить счёт ChesnokBet RUB."
+                                                           f"Сумма денежных средств на счету ChesnokBet RUB: {value}."
+                                                           f"Необходимо внести от {5000 - value}Р")
+                            break
+
+                except Exception as e:
+                    attempt += 1
+
+            attempt = 0
+            while attempt < attempts:
+                time_now = datetime.now().time()
                 if time_now < time(hour=17, minute=0, second=0):
+                    break
+                try:
                     today_sms = await parser.check_sms()
                     message = parser.is_message(datetime_now.date())
                     if not today_sms and not message:
                         for client in DB["clients"]:
                             await bot.send_message(client, "За сегодняшний день сообщений не было")
-                if isinstance(value, str):
-                    for client in DB["clients"]:
-                        await bot.send_message(client, value, parse_mode=types.ParseMode.MARKDOWN)
-                else:
-                    if value < 5000:
-                        for client in DB["clients"]:
-                            await bot.send_message(client, f"Необходимо пополнить счёт ChesnokBet RUB."
-                                                           f"Сумма денежных средств на счету ChesnokBet RUB: {value}."
-                                                           f"Необходимо внести от {5000-value}Р")
-            except Exception as e:
-                print(e)
+                            break
+                except Exception as e:
+                    attempt += 1
+
         await asyncio.sleep(60 * 60)
 
 

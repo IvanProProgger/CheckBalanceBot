@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import date, datetime, timedelta
 
-message = datetime.today().date() - timedelta(days=1)
+message_date = datetime.today().date() - timedelta(days=1)
 
 class Parser:
     def __init__(self, user, password):
@@ -15,6 +15,15 @@ class Parser:
         self.options = Options()
         self.options.add_argument('--headless')
         self.driver = webdriver.Chrome(options=self.options)
+
+    @staticmethod
+    def is_message(date):
+        date = datetime.today().date()
+        global message
+        if date != message_date:
+            message_date = date
+            return False
+        return True
 
     async def login(self):
         self.driver.get('https://xms.miatel.ru/login?redirect=%2F')
@@ -62,14 +71,6 @@ class Parser:
         sms_date = datetime.strptime(date_elem, '%d.%m.%Y %H:%M').date()
         now = datetime.now().date()
         return sms_date == now
-
-    @staticmethod
-    def is_message(date):
-        global message
-        if date != message:
-            message = date
-            return False
-        return True
 
     async def quit(self):
         self.driver.quit()
