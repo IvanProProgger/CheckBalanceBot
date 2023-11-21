@@ -14,7 +14,6 @@ if DB.get("clients") is None:
 attempts = 3
 
 async def report_loop(bot: Bot) -> None:
-
     """Запускается каждые 10 минут и проверяет, корректна ли сумма денежных средств
      на счету chesnok (более 5 тыс.руб.),
      наличие СМС-оповещений за сегодняшний день"""
@@ -32,6 +31,7 @@ async def report_loop(bot: Bot) -> None:
                         if value > 5000:
                             break
                         for client in DB["clients"]:
+                            attempt = 0
                             await bot.send_message(client, f"Необходимо пополнить счёт ChesnokBet RUB."
                                                            f"Сумма денежных средств на счету ChesnokBet RUB: {value}."
                                                            f"Необходимо внести от {5000 - value}Р")
@@ -40,7 +40,7 @@ async def report_loop(bot: Bot) -> None:
                 except Exception as e:
                     attempt += 1
 
-            attempt = 0
+
             while attempt < attempts:
                 time_now = datetime.now().time()
                 if time_now < time(hour=17, minute=0, second=0):
