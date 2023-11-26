@@ -41,19 +41,19 @@ async def report_loop(bot: Bot) -> None:
                     attempt += 1
 
 
-            while attempt < attempts:
-                time_now = datetime.now().time()
-                if time_now < time(hour=17, minute=0, second=0):
-                    break
-                try:
-                    today_sms = await parser.check_sms()
-                    message = parser.is_message(datetime_now.date())
-                    if not today_sms and not message:
-                        for client in DB["clients"]:
-                            await bot.send_message(client, "За сегодняшний день сообщений не было")
-                            break
-                except Exception as e:
-                    attempt += 1
+            time_now = datetime.now().time()
+            if time_now > time(hour=17, minute=0, second=0):
+                while attempt < attempts:
+                    time_now = datetime.now().time()
+                    try:
+                        today_sms = await parser.check_sms()
+                        message = parser.is_message()
+                        if not today_sms and not message:
+                            for client in DB["clients"]:
+                                await bot.send_message(client, "За сегодняшний день сообщений не было")
+                                break
+                    except Exception as e:
+                        attempt += 1
 
         await asyncio.sleep(60 * 60)
 

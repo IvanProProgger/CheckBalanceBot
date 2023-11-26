@@ -17,9 +17,9 @@ class Parser:
         self.driver = webdriver.Chrome(options=self.options)
 
     @staticmethod
-    def is_message(date):
+    def is_message():
         date = datetime.today().date()
-        global message
+        global message_date
         if date != message_date:
             message_date = date
             return False
