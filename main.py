@@ -70,15 +70,6 @@ async def report_loop(bot: Bot) -> None:
 
         await asyncio.sleep(60 * 60)
 
-for i in range (len(massive)):
-    maxim = 0
-    pred_max = 0
-    if massive[i] > maxim:
-        pred_max = maxim
-        maxim = massive[i]
-    if pred_max > massive[i] and pred_max < maxim:
-        pred_max = massive[i]
-
 
 async def start_handler(message: types.Message) -> None:
     """Приветствие нового пользователя и добавление его в базу."""
