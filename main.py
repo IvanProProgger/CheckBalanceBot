@@ -2,7 +2,7 @@ import asyncio
 import shelve
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import filters
-from config import USER, BOT_TOKEN
+from config import USER, USER_RUS_TELETOT, BOT_TOKEN
 from parser import Parser
 from datetime import datetime, time
 
@@ -41,31 +41,32 @@ async def report_loop(bot: Bot) -> None:
                     attempt += 1
 
 
-            time_now = datetime.now().time()
-            if time_now > time(hour=17, minute=0, second=0):
-                while attempt < attempts:
-                    try:
-                        today_sms = await parser.check_sms()
-                        message = parser.is_message()
-                        if not today_sms and not message:
-                            for client in DB["clients"]:
-                                await bot.send_message(client, "За сегодняшний день сообщений не было")
-                                break
-                        break
-                    except Exception as e:
-                        attempt += 1
+        time_now = datetime.now().time()
+        if time_now > time(hour=17, minute=0, second=0):
+            while attempt < attempts:
+                try:
+                    today_sms = await parser.check_sms()
+                    message = parser.is_message()
+                    if not today_sms and not message:
+                        for client in DB["clients"]:
+                            await bot.send_message(client, "За сегодняшний день сообщений не было")
+                            break
+                    break
+                except Exception as e:
+                    attempt += 1
 
-            value = False
-            try:
-                while value == False:
-                    captcha_text = await parser.get_captcha_symbols()
-                    value = await parser.login_smsprofi(captcha_text)
-            except Exception as e:
-                await asyncio.sleep(2 * 60)
-
-            if value < 1000:
+        
+        value = False
+        try:
+            while not value:
+                captcha_text = await parser.get_captcha_symbols()
+                value = await parser.login_smsprofi(captcha_text)
+            if value > 5000:
                 for client in DB["clients"]:
                     await bot.send_message(client, f"Баланс smsProfi меньше 1000 рублей! Текущий баланс: {value}")
+
+        except Exception as e:
+            print(e)
 
 
         await asyncio.sleep(60 * 60)
@@ -75,8 +76,8 @@ async def start_handler(message: types.Message) -> None:
     """Приветствие нового пользователя и добавление его в базу."""
     DB["clients"].add(message.chat.id)
     await message.answer(
-        f"Привет, {message.from_user.get_mention(as_html=True)} 👋!\nЕсли баланс ChesnokBet опустится ниже 5000Р"
-        f" - я пришлю уведомление!",
+        f"Привет, {message.from_user.get_mention(as_html=True)} 👋!\nЕсли баланс ChesnokBet/'Рус-Телетот'"
+        f" опустится ниже 5000Р - я пришлю уведомление!",
         parse_mode=types.ParseMode.HTML,
     )
 
