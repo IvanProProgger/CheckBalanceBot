@@ -38,6 +38,7 @@ async def report_loop(bot: Bot) -> None:
                             break
 
                 except Exception as e:
+                    print(e)
                     attempt += 1
 
 
@@ -53,20 +54,23 @@ async def report_loop(bot: Bot) -> None:
                             break
                     break
                 except Exception as e:
+                    print(e)
                     attempt += 1
 
-        
-        value = False
-        try:
-            while not value:
-                captcha_text = await parser.get_captcha_symbols()
-                value = await parser.login_smsprofi(captcha_text)
-            if value > 5000:
-                for client in DB["clients"]:
-                    await bot.send_message(client, f"Баланс smsProfi меньше 1000 рублей! Текущий баланс: {value}")
 
-        except Exception as e:
-            print(e)
+        for login, password in USER_RUS_TELETOT.items():
+            value = False
+            parser = Parser(user=login, password=password)
+            try:
+                while not value:
+                    captcha_text = await parser.get_captcha_symbols()
+                    value = await parser.login_smsprofi(captcha_text)
+                if value > 5000:
+                    for client in DB["clients"]:
+                        await bot.send_message(client, f"Баланс smsProfi меньше 1000 рублей! Текущий баланс: {value}")
+
+            except Exception as e:
+                print(e)
 
 
         await asyncio.sleep(60 * 60)
